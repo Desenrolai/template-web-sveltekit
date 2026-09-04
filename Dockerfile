@@ -26,9 +26,13 @@ COPY --from=builder --chown=svelte:nodejs /app/build ./build
 COPY --chown=svelte:nodejs package.json package-lock.json ./
 # Instala só as dependências de runtime. Hoje não há nenhuma (o adapter-node
 # empacota o app), mas o template existe para receber as do consumidor.
+#
+# O `-d` decide se há o que fazer; um chown que FALHE derruba o build de
+# propósito. Nada de `2>/dev/null || true` aqui: isso apagaria a mensagem e o
+# código de saída, e a imagem sairia com dono errado no node_modules — verde.
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --omit=dev \
-    && chown -R svelte:nodejs /app/node_modules 2>/dev/null || true
+    && if [ -d node_modules ]; then chown -R svelte:nodejs node_modules; fi
 
 # O forge roda o pod com runAsUser: 1001 e readOnlyRootFilesystem: true.
 USER 1001
