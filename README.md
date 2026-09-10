@@ -48,6 +48,21 @@ gate verde.
 import de `svelte` resolve para o build de servidor, onde `mount()` — que o Testing
 Library usa — não existe.
 
+## Validação de cookies
+
+O Kit 2.70.3 ainda declara `cookie ^0.6.0`, afetado por
+[GHSA-pxg6-pf52-xh8x](https://github.com/advisories/GHSA-pxg6-pf52-xh8x).
+O override limitado à dependência do Kit usa `cookie 0.7.2`: mantém `parse` e
+`serialize`, mas rejeita nomes, paths e domínios capazes de injetar atributos.
+Não há downgrade nem atualização major de Kit, Svelte ou adapter.
+
+`test/cookie-security.test.ts` resolve a cópia efetivamente consumida pelo Kit e
+cobre os três vetores de injeção, sessão válida, exclusão, parsing e encode/decode.
+Antes da correção: 3 testes falhavam e 4 passavam. Após a correção: os mesmos 7
+passam. Execute `npm test -- test/cookie-security.test.ts` e
+`npm audit --package-lock-only` ao atualizar dependências; retire o override
+quando o Kit declarar uma versão corrigida e esses checks permanecerem verdes.
+
 ## Pool de teste dentro de container
 
 `os.cpus()` reporta as CPUs do **host**, não o limite do cgroup. Dimensionar o pool do

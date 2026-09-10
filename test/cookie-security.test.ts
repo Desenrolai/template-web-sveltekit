@@ -10,12 +10,12 @@ describe('contrato de cookies do SvelteKit — GHSA-pxg6-pf52-xh8x', () => {
     expect(() => cookie.serialize('session=outro; Max-Age=999; extra', 'valor')).toThrow();
   });
 
-  it.each([
-    { path: '/; SameSite=None' },
-    { domain: 'example.test; SameSite=None' },
-  ])('rejeita injeção de atributos em %j', (options) => {
-    expect(() => cookie.serialize('session', 'valor', options)).toThrow();
-  });
+  it.each([{ path: '/; SameSite=None' }, { domain: 'example.test; SameSite=None' }])(
+    'rejeita injeção de atributos em %j',
+    (options) => {
+      expect(() => cookie.serialize('session', 'valor', options)).toThrow();
+    },
+  );
 
   it('preserva serialização de sessão, flags e domínio com ponto inicial', () => {
     expect(
@@ -50,6 +50,8 @@ describe('contrato de cookies do SvelteKit — GHSA-pxg6-pf52-xh8x', () => {
     expect(cookie.parse('session=a%20b', { decode: (value) => value })).toEqual({
       session: 'a%20b',
     });
-    expect(cookie.serialize('session', 'a%20b', { encode: (value) => value })).toBe('session=a%20b');
+    expect(cookie.serialize('session', 'a%20b', { encode: (value) => value })).toBe(
+      'session=a%20b',
+    );
   });
 });
